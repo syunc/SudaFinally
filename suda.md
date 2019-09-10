@@ -723,9 +723,83 @@ A：冒泡排序，因为记录距离正确位置至多两个位置，已基本�
 
 ###### 数据结构
 
+
+
+*chapter 1*
+
+```
+									*** 递归算法 ***
+
+--- 给定一个值，求出所有得到的新值的个数 ---
+#include <stdio.h>
+
+int generateVal(int num, int *sum) {
+	while(num%10) {//循环终止条件为新值无法继续右移，即已经把每一位都加到即将产生的新值
+		*sum += num % 10;//把个位加到新值
+		num /=10;// 右移一位
+		//printf("%d\n", num);
+	}
+	return *sum;
+}
+
+int countVal(int n) {
+	int count;
+	int newVal = 0;
+	if(n/10 == 0) {
+		return 1; //采用了树的递归思想
+	}
+	generateVal(n, &newVal);//生成一个新值
+	if(newVal != n) {如果新值不等于旧值就递归调用
+		count = countVal(newVal);//计算新值产生的个数
+	}
+	return count + 1;
+}
+
+void main() {
+	int sum = 0;
+	sum = countVal(12);
+	printf("%d\n",sum);
+}
+```
+
+
+
 *chapter 2*
 
+`usage` : 
+
 - [ ] 单链表+递归删除关键字
+
+```c
+							*** 递归算法 *** 
+							
+--- 递归删除单链表中所有值为item --- 
+void del_item (LinkList &L, ElementType x) {
+    LNode *p;//指向被删除节点
+
+    if(!L) {
+        return;
+    }
+
+    if(L->data == x) {
+        p = L;
+        L = L->next;
+        free(p);
+        del_item(L, x);
+    } else {
+        del_item(L->next, x);
+    }
+}
+
+
+
+
+
+
+
+```
+
+
 
 *chapter 3* 
 
@@ -799,9 +873,35 @@ typedef struct CSNode {
 
 `usage:`
 
-```
---- 统计结点个数 + 递归 ---
+```C
+								*** 递归算法 ***
 
+--- 统计结点个数 ---
+算法思想：采用递归算法，若树为空，结点个数为0，否则结点个数为第一子女树结点数和兄弟子树结点数之和再加1.
+int count(CSTree bt){       //递归求以孩子兄弟链表表示的树的结点数
+  	int n1,n2;
+	if(bt==NULL)
+  		return 0;//这个递归到这，精彩.
+	else{
+		n1=count(bt->firstchild);   //第一子女树结点个数
+		n2=count(bt->nextsibling);  //兄弟子树结点个数
+		return n1+n2+1;      //总结点个数
+	}
+}
+
+--- 计算孩子兄弟链表示的树的树高 ---
+算法思想：若树为空，高度为0.否则，高度为第一子女数加兄弟子树高度的大者。其非递归算法使用队列，逐层遍历树，取得树的高度。
+int height(CSTree bt) {
+	int hc,hs;
+	if(bt == NULL )
+		return 0;
+	else 
+		hc = height(bt->firstchild);
+		hs = height(bt->nextsibling);
+		if(hc+1 > hs )
+			return hc+1;
+		else return hs;
+}
 
 
 
@@ -903,9 +1003,121 @@ Typedef struct {
 
 ###### 数据结构
 
+*chapter 1*
+
+- 简答题
+
+```
+Q：无论是有向图还是无向图度数之和都为边数的两倍？
+A：正确，如果是无向图,顶点的度数之和是边数的两倍,这是没问题的,无向图中不讲入度和出度这两个概念.
+有向图中,任意一条边AB（A->B）都会给A提供一个出度,给B提供一个入度,所以顶点的度之和 = 2 * 顶点入度之和 = 2*顶点出度之和 = 顶点入度之和+顶点出度之和=边数的两倍.
+
+Q: 快排在被排序基本有序的情况下最容易发挥长处？
+A: 错误，快排序在被排序的数据基本上无序的情况下效率最高，因为当每次的枢轴都把表等分为长度相近的两个字表时速度是最快的。当排序数据基本有序时快速排序的效率很低，因为此时快速排序在分区时产生的两个区域分别包含n-1个元素和0个元素：每一出现这种不对称划分时在划分的时间代价为O(n),总的时间复杂度是O(n²)。
+
+Q: 求子串的定位操作成为串的匹配模式？
+A：正确，给定一个子串，要求在某个字符串(主串)中找出与该子串相同的所有子串，这就是模式匹配。若存在相同的子串，则返回子串在主串的位置。
+
+
+
+
+--- 关于快排的一些知识补充 ---
+1. 若采用递归方式对顺序表进行快速排序，则若每次划分后分区比较平衡，则递归次数少；若分区不平衡，递归次数多。递归次数与处理顺序是没有关系的(即先处理左边和右边是无关的)。
+```
+
+
+
 *chapter 2*
 
 - [ ] 单链表
+
+```
+--- 将质数分解并按照递减插入链表(粗糙版本) ---
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct LNode {
+	int data;
+	struct LNode *next;
+}LNode, *LinkList;
+
+void LinkInsertByDesc(LinkList &L, int k);
+
+void func (int n) {
+	LNode *L,*p1;
+    int k;
+	
+    L = (LinkList)malloc(sizeof(LNode));//创建头结点
+    L->next = NULL;
+    
+    for(k=2;k<n;k++) {
+		while(k!=n) {
+			if(n%k==0) { //每当条件成立的时候，产生一个质数
+				n=n/k;
+				//printf("%d\n",k);
+                LinkInsertByDesc(L,k);
+			} else 
+				break;         //跳出while使k+1                
+		}
+    }
+	LinkInsertByDesc(L,k);
+	p1 = L->next;
+	while(p1) {
+		printf("%d\n",p1->data);
+		p1 = p1->next;
+	}
+
+}
+
+void LinkInsertByDesc (LinkList &L, int k) {
+    LNode *p,*pre,*r,*s;//p为工作指针,pre为插入位置的前驱结点，r指向插入位置的后继结点，s为新生成的结点
+    //printf("%d---\n",k);
+	p = L->next;
+	if(p == NULL) { //若是初始化链表，创建第一个结点
+        //printf("%d\n",5);
+		s = (LinkList)malloc(sizeof(LNode));//创建新结点
+        s->data = k;
+        L->next = s;
+        s->next = NULL;
+        return ;
+    }
+
+	//return;
+    pre = L;
+    p = L->next;
+
+    while(pre->next != NULL) {
+        if (k < p->data) {
+            pre = pre->next;
+            p = p->next;
+        } else {
+            s = (LinkList)malloc(sizeof(LNode));//创建新结点
+            s->data = k;
+			//printf("%d\n",k);
+			
+            r = p;//保存插入位置的后继
+            pre->next = s;//插入结点
+            s->next = r;//把原来的结点连接在新建结点后。
+			break;
+
+        }
+        
+    }
+}
+
+
+void main()
+{
+    func(2100);
+}
+
+--- 将质数分解并按照递减插入链表(改进版本) ---
+
+
+```
+
+
+
 - [ ] 顺序表
 
 *chapter 3* 
@@ -916,9 +1128,23 @@ Typedef struct {
 
 - [ ] 二叉链的二叉树
 
+
+
 *chapter 5*
 
+- [ ] 图的度与顶点的关系
+
 - [ ] Dijkstra算法的用途，思想，手动模拟验证其正确性
+
+```shell
+用途：在图的数据结构应用中，用于计算一个点到其他所有点的最短路径。
+
+基本思想：采用贪心策略，首先设置一个集合S，存放已求出其最短路径的顶点，则尚未确定最短路径的顶点集合为(V-S)，其中V为图中所有顶点的集合；然后按照最短路径长度递增的顺序逐个已(V-S)中的顶点加到S中，直到S中包含全部顶点，而V-S为空为止。
+
+验证算法的正确性：生成一个均匀分布的网络，然后对算法进行测试，将每对结点之间的最短路径绘制成图，最后应该得到的是一幅完整的栅格图状图片，如果没有出现孤立的点则说明算法正确。
+```
+
+
 
 
 
